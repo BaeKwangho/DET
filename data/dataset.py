@@ -51,7 +51,7 @@ class DetectionData(Dataset):
                 temp = point[0]
                 boxes[i]['box'][j][0] = point[1]
                 boxes[i]['box'][j][1] = temp
-            exchange = boxes[i]['box'][2]
+            exchange = boxes[i]['box'][2].copy()
             boxes[i]['box'][2] = boxes[i]['box'][3]
             boxes[i]['box'][3] = exchange
             
@@ -64,33 +64,33 @@ class DetectionData(Dataset):
         data = dict(image=re_img,polygons=re_bbox,ignore_tags=ignore_tags)
         data = self.border_map(data)
         data = self.seg_map(data)
-        
         return data
    
     def __len__(self):
         return len(self.data_list)
     
 def collator(batch):
-    new_batch = dict(image=np.zeros(batch[0]['image'].shape)[np.newaxis,:,:,:],\
+    height, width, channel = batch[0]['image'].shape
+    new_batch = dict(image=np.zeros((len(batch),channel,height,width)),\
                      polygons=[],ignore_tags=[],\
-                     thresh_map=np.zeros(batch[0]['thresh_map'].shape)[np.newaxis,:,:],\
-                     thresh_mask=np.zeros(batch[0]['thresh_mask'].shape)[np.newaxis,:,:],\
-                     gt=np.zeros(batch[0]['gt'].shape)[np.newaxis,:,:,:],\
-                     mask=np.zeros(batch[0]['mask'].shape)[np.newaxis,:,:])
+                     thresh_map=np.zeros((len(batch),height,width)),\
+                     thresh_mask=np.zeros((len(batch),height,width)),\
+                     gt=np.zeros((len(batch),1,height,width)),\
+                     mask=np.zeros((len(batch),height,width)))
     
     for i,row in enumerate(batch):
-        new_batch['image'][i] = row['image']
+        new_batch['image'][i] = np.transpose(row['image'],(2,0,1))
         new_batch['polygons'].append(row['polygons'])   
         new_batch['ignore_tags'].append(row['ignore_tags'])   
         new_batch['thresh_map'][i] = row['thresh_map']        
         new_batch['thresh_mask'][i] = row['thresh_mask']        
-        new_batch['gt'][i] = row['gt']        
+        new_batch['gt'][i] = row['gt']
         new_batch['mask'][i] = row['mask']                
         
-    new_batch['image'] = torch.from_numpy(new_batch['image']).to(device)
-    new_batch['thresh_map'] = torch.from_numpy(new_batch['thresh_map']).to(device)    
-    new_batch['thresh_mask'] = torch.from_numpy(new_batch['thresh_mask']).to(device)    
-    new_batch['gt'] = torch.from_numpy(new_batch['gt']).to(device)    
-    new_batch['mask'] = torch.from_numpy(new_batch['mask']).to(device)
+    new_batch['image'] = torch.from_numpy(new_batch['image']).to(device).to(torch.float)
+    new_batch['thresh_map'] = torch.from_numpy(new_batch['thresh_map']).to(device).to(torch.float)    
+    new_batch['thresh_mask'] = torch.from_numpy(new_batch['thresh_mask']).to(device).to(torch.float)    
+    new_batch['gt'] = torch.from_numpy(new_batch['gt']).to(device).to(torch.float)    
+    new_batch['mask'] = torch.from_numpy(new_batch['mask']).to(device).to(torch.float)
     
     return new_batch

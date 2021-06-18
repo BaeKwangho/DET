@@ -121,7 +121,6 @@ class SegDetector(nn.Module):
         in3 = self.in3(c3)
         in2 = self.in2(c2)
 
-        print(self.up5(in5).shape)
         out4 = self.up5(in5) + in4  # 1/16
         out3 = self.up4(out4) + in3  # 1/8
         out2 = self.up3(out3) + in2  # 1/4

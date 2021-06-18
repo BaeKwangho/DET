@@ -17,6 +17,8 @@ class MakeSegDetectorData(object):
                 image*, polygons*, ignore_tags*, shape, filename
                 * means required.
         '''
+        
+        
         image = data['image']
         polygons = data['polygons']
         ignore_tags = data['ignore_tags']
@@ -56,7 +58,7 @@ class MakeSegDetectorData(object):
 
         data.update(image=image,
                     polygons=polygons,
-                    gt=gt, mask=mask)
+                    gt=mask, mask=mask)
         return data
 
     def validate_polygons(self, polygons, ignore_tags, h, w):
@@ -77,7 +79,7 @@ class MakeSegDetectorData(object):
             if area > 0:
                 polygons[i] = polygons[i][(0, 3, 2, 1), :]
         return polygons, ignore_tags
-
+    '''
     def polygon_area(self, polygon):
         edge = [
             (polygon[1][0] - polygon[0][0]) * (polygon[1][1] + polygon[0][1]),
@@ -86,3 +88,11 @@ class MakeSegDetectorData(object):
             (polygon[0][0] - polygon[3][0]) * (polygon[0][1] + polygon[3][1])
         ]
         return np.sum(edge) / 2.
+    '''
+    def polygon_area(self, polygon):
+        edge = 0
+        for i in range(polygon.shape[0]):
+            next_index = (i + 1) % polygon.shape[0]
+            edge += (polygon[next_index, 0] - polygon[i, 0]) * (polygon[next_index, 1] + polygon[i, 1])
+
+        return edge / 2.

@@ -1,4 +1,4 @@
 Dataset:
     data_path: '/root/storage/BKH/DET/train_data/dataset_v1.3/02/'
-    batch_size: 10
+    batch_size: 20
     

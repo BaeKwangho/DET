@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from shapely.geometry import Polygon
 import pyclipper
+import matplotlib.pyplot as plt
 
 class MakeBorderMap(object):
 
@@ -40,6 +41,7 @@ class MakeBorderMap(object):
                         pyclipper.ET_CLOSEDPOLYGON)
         padded_polygon = np.array(padding.Execute(distance)[0])
         cv2.fillPoly(mask, [padded_polygon.astype(np.int32)], 1.0)
+        plt.imshow(mask)
 
         xmin = padded_polygon[:, 0].min()
         xmax = padded_polygon[:, 0].max()
